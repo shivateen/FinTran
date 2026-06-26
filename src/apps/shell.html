@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinTran × Tiger — Finance AI Platform</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F08C1E'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='17' font-weight='700' fill='white' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --tiger-orange:#F08C1E; --tiger-dark:#1C1C1C; --tiger-ink:#262624;
+    --switch-bg:rgba(28,28,28,.92); --switch-line:rgba(255,255,255,.10);
+    --switch-txt:#C9CAC6; --switch-active:#F5A93E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;width:100%;overflow:hidden;background:#000;font-family:'Poppins',-apple-system,system-ui,sans-serif}
+
+  /* App switcher bar */
+  .switcher{
+    position:fixed;top:0;left:0;right:0;height:44px;z-index:10000;
+    background:var(--switch-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--switch-line);
+    display:flex;align-items:center;padding:0 14px;gap:4px;
+    transform:translateY(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .switcher.show{transform:translateY(0)}
+  .switcher .brand{display:flex;align-items:center;gap:8px;margin-right:18px;font-size:13px;font-weight:600;color:#fff;white-space:nowrap}
+  .switcher .logo{width:24px;height:24px;border-radius:6px;background:var(--tiger-orange);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px}
+  .switcher .brand .by{font-size:9.5px;color:#85878C;font-weight:500}
+  .switcher .tabs{display:flex;gap:2px;align-items:center}
+  .sw-tab{
+    display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--switch-txt);
+    padding:7px 13px;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap;border:none;background:none;
+  }
+  .sw-tab:hover{background:rgba(255,255,255,.06);color:#fff}
+  .sw-tab.active{background:rgba(240,140,30,.16);color:var(--switch-active)}
+  .sw-tab .n{width:18px;height:18px;border-radius:5px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600}
+  .sw-tab.active .n{background:rgba(240,140,30,.25)}
+  .switcher .spacer{flex:1}
+  .switcher .hint{font-size:10px;color:#6A6F7C;font-family:'JetBrains Mono',monospace}
+
+  /* Frame stage */
+  .stage{position:absolute;top:0;left:0;right:0;bottom:0;transition:top .3s}
+  .stage.with-bar{top:44px}
+  .frame{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;pointer-events:none;transition:opacity .35s;background:#fff}
+  .frame.active{opacity:1;pointer-events:auto;z-index:5}
+
+  /* Switcher reveal tab (when bar hidden) */
+  .reveal-tab{
+    position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:10001;
+    width:54px;height:20px;background:var(--switch-bg);border-radius:0 0 10px 10px;
+    border:1px solid var(--switch-line);border-top:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:.2s;
+  }
+  .reveal-tab:hover{height:24px}
+  .reveal-tab svg{width:16px;height:16px;stroke:var(--switch-txt);fill:none;stroke-width:2}
+  .reveal-tab.hide{display:none}
+
+  /* Loading */
+  .boot{position:fixed;inset:0;z-index:20000;background:var(--tiger-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s}
+  .boot.gone{opacity:0;pointer-events:none}
+  .boot .logo{width:64px;height:64px;border-radius:16px;background:var(--tiger-orange);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:32px;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.85}}
+  .boot .t{color:#fff;font-size:16px;font-weight:600}
+  .boot .s{color:#85878C;font-size:12px;font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="boot" id="boot">
+  <div class="logo">T</div>
+  <div class="t">VNKS FinTran × Tiger — Finance AI Platform</div>
+  <div class="s" id="bootMsg">initialising…</div>
+</div>
+
+<div class="switcher" id="switcher">
+  <div class="brand"><span class="logo">T</span><div>FinTran FinIQ<div class="by">Powered by Tiger Analytics</div></div></div>
+  <div class="tabs">
+    <button class="sw-tab" data-app="evolution"><span class="n">1</span>Vision</button>
+    <button class="sw-tab" data-app="command"><span class="n">2</span>Finance AI Console</button>
+    <button class="sw-tab" data-app="closeiq"><span class="n">3</span>CloseIQ · Month-End Close</button>
+    <button class="sw-tab" data-app="reconiq"><span class="n">4</span>ReconIQ · IC Reconciliation</button>
+    <button class="sw-tab" data-app="paymentsiq"><span class="n">5</span>PaymentsIQ · IPC Validation</button>
+    <button class="sw-tab" data-app="forecastiq"><span class="n">6</span>ForecastIQ · AI Forecasting</button>
+    <button class="sw-tab" data-app="valuationiq"><span class="n">7</span>ValuationIQ · M&A Valuation</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="hint">⌘1 … ⌘7 to switch</div>
+</div>
+
+<div class="reveal-tab hide" id="revealTab" title="Show app switcher">
+  <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+</div>
+
+<div class="stage" id="stage">
+  <iframe class="frame" id="frame-evolution" src="__EVOLUTION_SRC__"></iframe>
+  <iframe class="frame" id="frame-command"   src="__COMMAND_SRC__"></iframe>
+  <iframe class="frame" id="frame-closeiq"   src="__CLOSEIQ_SRC__"></iframe>
+  <iframe class="frame" id="frame-reconiq"     src="__RECONIQ_SRC__"></iframe>
+  <iframe class="frame" id="frame-paymentsiq" src="__PAYMENTSIQ_SRC__"></iframe>
+  <iframe class="frame" id="frame-forecastiq" src="__FORECASTIQ_SRC__"></iframe>
+  <iframe class="frame" id="frame-valuationiq" src="__VALUATIONIQ_SRC__"></iframe>
+</div>
+
+<script>
+(function(){
+  var current = 'evolution';
+  var barShown = false;
+  var apps = ['evolution','command','closeiq','reconiq','paymentsiq','forecastiq','valuationiq'];
+
+  function setBar(show){
+    barShown = show;
+    document.getElementById('switcher').classList.toggle('show', show);
+    document.getElementById('stage').classList.toggle('with-bar', show);
+    document.getElementById('revealTab').classList.toggle('hide', show);
+  }
+
+  function switchTo(app){
+    if(!apps.includes(app)) return;
+    current = app;
+    apps.forEach(function(a){
+      document.getElementById('frame-'+a).classList.toggle('active', a===app);
+    });
+    document.querySelectorAll('.sw-tab').forEach(function(t){
+      t.classList.toggle('active', t.getAttribute('data-app')===app);
+    });
+    // Show the bar once the user has left the vision intro
+    if(app!=='evolution') setBar(true);
+    else setBar(false);
+  }
+
+  // Tab clicks
+  document.querySelectorAll('.sw-tab').forEach(function(t){
+    t.addEventListener('click', function(){ switchTo(t.getAttribute('data-app')); });
+  });
+  // Reveal tab
+  document.getElementById('revealTab').addEventListener('click', function(){ setBar(true); });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e){
+    if((e.metaKey||e.ctrlKey) && e.key==='1'){ e.preventDefault(); switchTo('evolution'); }
+    if((e.metaKey||e.ctrlKey) && e.key==='2'){ e.preventDefault(); switchTo('command'); }
+    if((e.metaKey||e.ctrlKey) && e.key==='3'){ e.preventDefault(); switchTo('closeiq'); }
+    if((e.metaKey||e.ctrlKey) && e.key==='4'){ e.preventDefault(); switchTo('reconiq'); }
+    if((e.metaKey||e.ctrlKey) && e.key==='5'){ e.preventDefault(); switchTo('paymentsiq'); }
+    if((e.metaKey||e.ctrlKey) && e.key==='6'){ e.preventDefault(); switchTo('forecastiq'); }
+    if((e.metaKey||e.ctrlKey) && e.key==='7'){ e.preventDefault(); switchTo('valuationiq'); }
+  });
+
+  // Listen for navigation requests from inside the iframes
+  window.addEventListener('message', function(e){
+    if(e.data && e.data.__navTo){ switchTo(e.data.__navTo); }
+    if(e.data && e.data.__showBar){ setBar(true); }
+  });
+
+  // Boot sequence
+  var msgs = ['initialising…','loading vision…','mounting command center…','wiring CloseIQ engine…','loading ReconIQ…','loading PaymentsIQ…','loading ForecastIQ…','loading ValuationIQ…','ready'];
+  var i = 0;
+  var bm = document.getElementById('bootMsg');
+  var iv = setInterval(function(){
+    i++; if(i<msgs.length) bm.textContent = msgs[i];
+    if(i>=msgs.length-1){
+      clearInterval(iv);
+      setTimeout(function(){
+        document.getElementById('boot').classList.add('gone');
+        switchTo('evolution');
+      }, 400);
+    }
+  }, 420);
+
+  // Expose for inline calls
+  window.__platformGo = switchTo;
+})();
+</script>
+</body>
+</html>

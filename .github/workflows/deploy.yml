@@ -1,0 +1,62 @@
+name: Build & Deploy to GitHub Pages
+
+# Builds the platform and deploys the compiled output (public/) to THIS repo's
+# GitHub Pages site: https://shivateen.github.io/FinTran/
+# Uses the official GitHub Pages deployment — no external repo, no PAT needed.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:       # allow manual trigger from the Actions tab
+
+# ── One-time setup required (in this repo's Settings) ────────────────────────
+#   Settings → Pages → Build and deployment → Source = "GitHub Actions"
+# That's the only manual step. After it, every push to main auto-deploys.
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; cancel in-progress runs on new pushes.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    name: Build & deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build platform
+        run: python3 scripts/build_platform.py
+
+      - name: Verify output
+        run: |
+          test -f public/index.html
+          test -f public/app-closeiq.html
+          test -f public/app-forecastiq.html
+          test -d public/valuationiq
+          grep -q "Finance AI Platform" public/index.html
+          grep -q "Cash-flow levers" public/app-forecastiq.html
+          echo "✓ Platform build verified (incl. ForecastIQ scenario engine)"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

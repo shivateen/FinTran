@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ReconIQ · Intercompany Reconciliation</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F08C1E'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='17' font-weight='700' fill='white' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Variables ── */
+:root{
+  --bg:#0d0e11;--panel:#141618;--panel-2:#1a1c20;--panel-3:#222428;
+  --orange:#F08C1E;--orange-soft:#E09520;--orange-dim:rgba(240,140,30,.30);--orange-tint:rgba(240,140,30,.14);
+  --ink:#DDDDD9;--ink-2:#9A9CA4;--ink-3:#686A72;--line:#252830;--line-2:#313540;
+  --risk:#E05252;--risk-tint:rgba(224,82,82,.14);
+  --ok:#2EA86D;--ok-tint:rgba(46,168,109,.14);
+  --warn:#D09A2A;--warn-tint:rgba(208,154,42,.14);
+  --mono:'JetBrains Mono',monospace;--font:'Poppins',-apple-system,sans-serif;
+}
+:root.theme-light{
+  --bg:#F1F1EE;--panel:#FFFFFF;--panel-2:#F6F6F3;--panel-3:#ECECE8;
+  --orange:#F08C1E;--orange-soft:#C8720D;--orange-dim:#EBCFA6;--orange-tint:rgba(240,140,30,.10);
+  --ink:#1C1C1C;--ink-2:#404040;--ink-3:#85878C;--line:#E4E4E0;--line-2:#CDCDC7;
+  --risk:#C03A2B;--risk-tint:rgba(192,58,43,.10);
+  --ok:#1E7E54;--ok-tint:rgba(30,126,84,.10);
+  --warn:#A8731B;--warn-tint:rgba(168,115,27,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:13px;-webkit-font-smoothing:antialiased}
+button{font-family:var(--font);cursor:pointer;border:none;background:none;color:inherit}
+input,textarea{font-family:var(--font);background:none;border:none;outline:none;color:inherit;resize:none}
+/* ── Layout ── */
+.app{display:flex;height:100vh;overflow:hidden}
+/* ── Nav ── */
+.nav{width:60px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:2px}
+.nav .logo{width:34px;height:34px;border-radius:9px;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:17px;margin-bottom:10px;flex-shrink:0}
+.nav-btn{width:44px;height:44px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink-3);font-size:9.5px;font-weight:500;transition:.15s;padding:6px}
+.nav-btn svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn:hover{color:var(--ink-2);background:var(--panel-2)}
+.nav-btn.active{color:var(--orange);background:var(--orange-tint)}
+.nav-sp{flex:1}
+.ver-chip{font-size:9px;color:var(--ink-3);font-family:var(--mono);padding:3px 6px;border-radius:5px;border:1px solid var(--line);margin-bottom:6px}
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+/* ── Topbar ── */
+.topbar{height:54px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 18px;flex-shrink:0}
+:root.theme-light .topbar{background:#fff;border-bottom:3px solid var(--orange);backdrop-filter:none}
+.brandmark .p{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+.brandmark .p b{color:var(--orange)}
+.brandmark .by{font-size:10px;color:var(--ink-3);font-weight:500}
+.tb-title{font-size:13.5px;font-weight:600;color:var(--ink)}
+.tb-sub{font-size:11px;color:var(--ink-3)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.theme-toggle{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;transition:.15s;border:1px solid var(--line)}
+:root.theme-light .theme-toggle{background:var(--panel-2)}
+.theme-toggle:hover{background:var(--panel-3)}
+.theme-toggle svg{width:16px;height:16px;stroke:var(--ink-2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tb-user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:10px;padding:5px 10px 5px 6px;border:1px solid var(--line)}
+:root.theme-light .tb-user{background:var(--panel-2)}
+.tb-user .ava{width:26px;height:26px;border-radius:7px;background:var(--orange);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+.tb-user .nm{font-size:12px;font-weight:600;color:var(--ink);line-height:1.2}
+.tb-user .rl{font-size:10px;color:var(--ink-3)}
+.period-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--ink-2);font-family:var(--mono)}
+:root.theme-light .period-pill{background:var(--panel-2)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:ldot 2s infinite}
+@keyframes ldot{0%,100%{opacity:1}50%{opacity:.35}}
+/* ── Content ── */
+.content{flex:1;overflow-y:auto;padding:18px;background:var(--bg)}
+/* ── KPI cards ── */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .lbl{font-size:10.5px;color:var(--ink-3);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi .val{font-size:22px;font-weight:700;color:var(--ink);font-family:var(--mono);line-height:1}
+.kpi .sub{font-size:11px;margin-top:5px}
+.kpi .sub.ok{color:var(--ok)}.kpi .sub.risk{color:var(--risk)}.kpi .sub.warn{color:var(--warn)}
+/* ── Tables ── */
+.tbl-wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:14px}
+table{width:100%;border-collapse:collapse}
+th{font-size:10.5px;font-weight:500;color:var(--ink-3);text-align:left;padding:9px 14px;background:var(--panel-2);border-bottom:1px solid var(--line);white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+td{font-size:12.5px;color:var(--ink);padding:10px 14px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:none}
+tr.clickable:hover td{background:var(--panel-2);cursor:pointer}
+tr.clickable:hover td:first-child{border-left:2px solid var(--orange)}
+td.num{text-align:right;font-family:var(--mono)}
+td.mono{font-family:var(--mono);font-size:11.5px}
+/* ── Pills ── */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.pill.ok{background:var(--ok-tint);color:var(--ok)}
+.pill.risk{background:var(--risk-tint);color:var(--risk)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)}
+.pill.orange{background:var(--orange-tint);color:var(--orange-soft)}
+.pill.ink{background:var(--panel-3);color:var(--ink-2)}
+/* ── Analysis card ── */
+.acard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.acard-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.acard-icon{width:28px;height:28px;border-radius:7px;background:var(--orange-tint);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.acard-icon svg{width:14px;height:14px;stroke:var(--orange-soft);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.acard h3{font-size:13px;font-weight:600;color:var(--ink)}
+.acard p{font-size:12.5px;color:var(--ink-2);line-height:1.65}
+/* ── Drawer ── */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800;opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:480px;background:var(--panel);border-left:1px solid var(--line);z-index:900;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.drawer.show{transform:none}
+.drw-head{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 22px 16px;border-bottom:1px solid var(--line)}
+.drw-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.drw-sub{font-size:11.5px;color:var(--ink-3)}
+.drw-x{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--ink-3);background:var(--panel-2);cursor:pointer;flex-shrink:0}
+.drw-x:hover{color:var(--ink)}
+.drw-body{padding:18px 22px}
+.drw-sect{margin-bottom:20px}
+.drw-sect h3{font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.drw-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line)}
+.drw-row:last-child{border-bottom:none}
+.drw-k{font-size:11.5px;color:var(--ink-3)}
+.drw-v{font-size:12px;color:var(--ink);font-weight:500;text-align:right;font-family:var(--mono)}
+.res-box{border-radius:10px;padding:13px 15px;margin-bottom:9px}
+.res-box.warn{background:var(--warn-tint);border:1px solid var(--warn)}
+.res-box.orange{background:var(--orange-tint);border:1px solid var(--orange-dim)}
+.res-box.ink{background:var(--panel-3);border:1px solid var(--line)}
+.res-box .rtitle{font-size:12px;font-weight:600;margin-bottom:6px}
+.res-box.warn .rtitle{color:var(--warn)}
+.res-box.orange .rtitle{color:var(--orange-soft)}
+.res-box.ink .rtitle{color:var(--ink-2)}
+.res-box .rbody{font-size:12px;color:var(--ink-2);line-height:1.65;font-family:var(--mono)}
+.res-box .rnote{font-size:11px;color:var(--ink-3);margin-top:5px;font-family:var(--font)}
+.res-box.selectable{cursor:pointer;transition:border-color .15s,background .15s}
+.res-box.selectable:hover{border-color:var(--orange-dim)!important}
+.res-box.selected{border-color:var(--orange)!important;outline:2px solid var(--orange-tint);outline-offset:-1px}
+.res-box.selected .rtitle{color:var(--orange-soft)!important}
+.res-sel-hint{font-size:10.5px;color:var(--ink-3);margin-bottom:8px}
+.btn-approve{margin-top:12px;width:100%;padding:11px;border-radius:10px;background:var(--orange);color:#fff;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.15s}
+.btn-approve:hover:not(:disabled){opacity:.88}
+.btn-approve:disabled{opacity:.32;cursor:not-allowed;background:var(--ink-3)}
+.res-confirm{background:var(--ok-tint);border:1px solid var(--ok);border-radius:10px;padding:14px 16px;margin-top:2px}
+.res-confirm .rct{font-size:12.5px;font-weight:600;color:var(--ok);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.res-confirm .rcb{font-size:11.5px;color:var(--ink-2);line-height:1.75;font-family:var(--mono)}
+.res-confirm .rch{font-size:10px;color:var(--ink-3);margin-top:8px;font-family:var(--font)}
+/* ── History timeline ── */
+.hist-tbl{width:100%;border-collapse:collapse}
+.hist-tbl th{font-size:10px;font-weight:500;color:var(--ink-3);text-align:left;padding:6px 10px;background:var(--panel-2);border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.3px}
+.hist-tbl td{padding:8px 10px;border-bottom:1px solid var(--line);color:var(--ink-2);font-size:12px;vertical-align:middle}
+.hist-tbl tr:last-child td{border-bottom:none;color:var(--ink);font-weight:500}
+.hist-tbl td.num{text-align:right;font-family:var(--mono)}
+.hist-dot{width:8px;height:8px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:5px;flex-shrink:0}
+.hist-dot.ok{background:var(--ok)}.hist-dot.warn{background:var(--warn)}.hist-dot.risk{background:var(--risk)}
+.trend-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:14px;font-size:10.5px;font-weight:600;vertical-align:middle}
+.trend-chip.ok{background:var(--ok-tint);color:var(--ok)}
+.trend-chip.warn{background:var(--warn-tint);color:var(--warn)}
+.trend-chip.risk{background:var(--risk-tint);color:var(--risk)}
+.esc-banner{margin-top:10px;background:var(--risk-tint);border:1px solid var(--risk);border-radius:10px;padding:11px 14px}
+.esc-banner .eb-t{font-size:12px;font-weight:600;color:var(--risk);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.esc-banner .eb-b{font-size:12px;color:var(--ink-2);line-height:1.55}
+.watch-note{margin-top:9px;background:var(--warn-tint);border:1px solid var(--warn);border-radius:8px;padding:9px 13px;font-size:11.5px;color:var(--warn);line-height:1.5}
+/* ── Rail ── */
+.rail{width:340px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;transition:width .3s cubic-bezier(.4,0,.2,1)}
+.app.rail-collapsed .rail{width:0;border:none}
+.app.rail-collapsed .sage-fab{right:24px}
+.app.rail-collapsed .sage-panel{right:0}
+.rail-head{padding:14px 14px 8px;border-bottom:1px solid var(--line)}
+.rail-head .t{font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px}
+.rail-head .s{font-size:10px;color:var(--ink-3);margin-top:3px;line-height:1.4}
+.gear{width:13px;height:13px;stroke:var(--orange);fill:none;stroke-width:1.8}
+.mesh-wrap{padding:10px 8px 4px}
+.mesh-svg{width:100%;height:auto;display:block}
+.medge{stroke:var(--orange-dim);stroke-width:1;fill:none}
+.medge.active{stroke:var(--orange);stroke-width:1.5;animation:pedge 1.4s ease-in-out infinite}
+@keyframes pedge{0%,100%{opacity:.35}50%{opacity:1}}
+.mnode circle{fill:var(--panel-3);stroke:var(--line-2);stroke-width:1.4;transition:.35s;opacity:.5}
+.mnode.active circle{fill:var(--orange-tint);stroke:var(--orange);opacity:1}
+.mnode text{fill:var(--ink-3);font-family:var(--mono);font-size:6.5px;font-weight:600;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.mnode.active text{fill:var(--orange-soft)}
+.mlabel{fill:var(--ink-3);font-size:5.8px;font-family:var(--mono);opacity:.6;transition:.3s;pointer-events:none}
+.mlabel.live{opacity:1;fill:var(--orange-soft)}
+.mhub circle{fill:var(--panel-2);stroke:var(--orange);stroke-width:1.4}
+.mhub text{fill:var(--orange-soft);font-family:var(--mono);font-size:6px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+.feed{flex:1;overflow-y:auto;padding:8px 10px;min-height:0}
+.feed-item{display:flex;align-items:flex-start;gap:7px;padding:7px 0;border-bottom:1px solid var(--line)}
+.feed-item:last-child{border-bottom:none}
+.fdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;background:var(--ink-3)}
+.fdot.ok{background:var(--ok)}.fdot.risk{background:var(--risk)}.fdot.warn{background:var(--warn)}.fdot.orange{background:var(--orange)}
+.feed-item .ag{font-size:9.5px;font-weight:600;color:var(--ink-2);font-family:var(--mono)}
+.feed-item .msg{font-size:11px;color:var(--ink-3);margin-top:1px;line-height:1.4}
+.feed-item .ts{font-size:9px;color:var(--ink-3);margin-top:2px;font-family:var(--mono)}
+.rail-foot{padding:8px 12px;border-top:1px solid var(--line);font-size:10px;color:var(--ink-3);display:flex;justify-content:space-between;flex-shrink:0}
+/* ── Sage ── */
+.sage-fab{position:fixed;bottom:22px;right:352px;background:var(--orange);color:#fff;border-radius:22px;padding:10px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(240,140,30,.4);z-index:700;transition:.15s;border:none;cursor:pointer}
+.sage-fab:hover{transform:translateY(-2px)}
+.sage-fab svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
+.sage-panel{position:fixed;bottom:0;right:340px;width:380px;background:var(--panel-2);border:1px solid var(--line-2);border-bottom:none;border-radius:14px 14px 0 0;z-index:720;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sage-panel.open{transform:none}
+.sage-ph{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sage-orb{width:28px;height:28px;border-radius:8px;background:var(--orange);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sage-orb svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
+.sage-id .n{font-size:13px;font-weight:600;color:var(--ink)}
+.sage-id .r{font-size:10px;color:var(--ink-3)}
+.sage-x{margin-left:auto;color:var(--ink-3);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1}
+.sage-x:hover{color:var(--ink)}
+.sage-body{max-height:300px;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.smsg{max-width:90%;padding:9px 13px;border-radius:12px;font-size:12.5px;line-height:1.5}
+.smsg.bot{background:var(--panel-3);color:var(--ink);align-self:flex-start;border-radius:4px 12px 12px 12px}
+.smsg.user{background:var(--orange-tint);color:var(--ink);align-self:flex-end;border-radius:12px 4px 12px 12px}
+.sage-foot{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.sage-in{flex:1;font-size:12.5px;color:var(--ink);background:var(--panel-3);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.sage-in::placeholder{color:var(--ink-3)}
+.sage-send{background:var(--orange);border-radius:8px;padding:8px 10px;color:#fff;border:none;cursor:pointer}
+.sage-send svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;display:block}
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:9px 16px;font-size:12.5px;color:var(--ink);display:flex;align-items:center;gap:8px;opacity:0;transition:.25s;z-index:1000;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast svg{width:15px;height:15px;stroke:var(--ok);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+/* ── Skeleton ── */
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk{background:linear-gradient(90deg,var(--panel-2) 25%,var(--panel-3) 50%,var(--panel-2) 75%);background-size:200% 100%;animation:shimmer 1.3s ease-in-out infinite;border-radius:8px}
+.sk-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.sk-kpi{height:82px;border-radius:12px}
+.sk-block{height:260px;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- LEFT NAV -->
+<nav class="nav">
+  <div class="logo">T</div>
+  <button class="nav-btn active" id="nb-overview" onclick="go('overview')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Overview
+  </button>
+  <button class="nav-btn" id="nb-ic" onclick="go('ic')">
+    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    IC Pairs
+  </button>
+  <button class="nav-btn" id="nb-brs" onclick="go('brs')">
+    <svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 5-7 4 5M3 21h18"/></svg>
+    BRS
+  </button>
+  <div class="nav-sp"></div>
+  <div class="ver-chip">v1.0</div>
+  <button class="nav-btn" id="nb-agents" onclick="toggleRail()">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06A1.65 1.65 0 0015 19.4a1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4"/></svg>
+    Agents
+  </button>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="brandmark"><span class="p">Recon<b>IQ</b></span><span class="by" style="margin-left:6px">by Tiger Analytics</span></div>
+    <div style="margin-left:8px">
+      <div class="tb-title" id="barT">Intercompany Reconciliation</div>
+      <div class="tb-sub" id="barS">May 2026 · 10 IC pairs · 400+ entities · AED reporting</div>
+    </div>
+    <div class="tb-right">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <svg id="themeIcon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <div class="tb-user">
+        <div class="ava">S</div>
+        <div><div class="nm">Siva</div><div class="rl">Group RTR Lead</div></div>
+      </div>
+      <div class="period-pill"><span class="live-dot"></span>May-26 · Live</div>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</main>
+
+<!-- AGENT RAIL -->
+<aside class="rail">
+  <div class="rail-head">
+    <div class="t">
+      <svg class="gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06A1.65 1.65 0 0015 19.4a1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 9a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9"/></svg>
+      Recon Agents
+    </div>
+    <div class="s">6 agents · INGEST→REPORT pipeline · autonomous</div>
+  </div>
+  <div class="mesh-wrap" id="meshWrap"></div>
+  <div class="feed" id="feed"></div>
+  <div class="rail-foot"><span id="feedCount">0 events</span><span>audit chain ✓</span></div>
+</aside>
+
+</div>
+
+<!-- SAGE -->
+<button class="sage-fab" onclick="toggleSage()">
+  <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><path d="M9 21h6"/></svg>
+  Ask Sage
+</button>
+<div class="sage-panel" id="sagePanel">
+  <div class="sage-ph">
+    <div class="sage-orb"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><path d="M9 21h6"/></svg></div>
+    <div class="sage-id"><div class="n">Sage</div><div class="r">IC reconciliation assistant</div></div>
+    <span class="sage-x" onclick="toggleSage()">×</span>
+  </div>
+  <div class="sage-body" id="sageBody">
+    <div class="smsg bot">Hello Siva. May-26 IC run complete — 7 of 10 pairs matched, AED 2.6M open across 3 items. IC-04 is an FX gap (AED 1.5M); IC-06 and IC-09 are timing differences expected to self-clear in June. What would you like to drill into?</div>
+  </div>
+  <div class="sage-foot">
+    <input class="sage-in" id="sageIn" placeholder="Ask about an IC pair, entity, or gap…" onkeydown="if(event.key==='Enter')sendSage()">
+    <button class="sage-send" onclick="sendSage()"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+  </div>
+</div>
+
+<!-- DRAWER -->
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg"></span></div>
+
+<script>
+/* ── DATA ── */
+var ENTITIES={
+  'RE-01':'FinTran Real Estate LLC','RE-02':'FinTran Realty LLC',
+  'INV-01':'FinTran Investments Ltd','INV-02':'DICO Capital LLC',
+  'COR-01':'FinTran Group Holding','HOS-01':'FinTran Hospitality LLC',
+  'MGT-01':'FinTran Management Services'
+};
+var IC_PAIRS=[
+  {id:'IC-01',a:'RE-01',b:'MGT-01',type:'Management fee recharge',va:8400000,vb:8400000,diff:0,status:'matched',note:'Quarterly management fee per service agreement at AED 8.4M. Both entities posted on schedule — no exceptions.'},
+  {id:'IC-02',a:'RE-01',b:'RE-02',type:'Cost allocation — Lagoons Phase 1',va:3200000,vb:3200000,diff:0,status:'matched',note:'Lagoons Phase 1 shared cost allocation split 50/50. Matched cleanly on 31-May.'},
+  {id:'IC-03',a:'INV-01',b:'COR-01',type:'Intercompany loan interest',va:5700000,vb:5700000,diff:0,status:'matched',note:'Q2-2026 interest on AED 285M IC loan at 4.0% p.a. Both entities posted identically.'},
+  {id:'IC-04',a:'RE-01',b:'INV-01',type:'FX revaluation — USD receivable',va:24100000,vb:22600000,diff:1500000,status:'unmatched-fx',gapType:'fx',resolved:null,resolvedRef:null,resolvedAt:null,note:'RE-01 revalued its USD-denominated IC receivable at the 31-May closing rate (AED/USD 3.6730); INV-01 used the monthly average rate (3.6185). The AED 1.5M gap is a pure FX revaluation difference — not a transactional discrepancy. Resolution: post an FX adjustment entry on RE-01 to align both to the closing rate.',resA:{label:'FX Adjustment — RE-01',dr:'GL 1110  IC Receivable — INV-01',cr:'GL 4200  FX Gain / Loss',amt:1500000,reverse:false,ref:'FX-ADJ-IC04-MAY26'}},
+  {id:'IC-05',a:'HOS-01',b:'COR-01',type:'Brand royalty fee',va:2100000,vb:2100000,diff:0,status:'matched',note:'Monthly brand and IP licence fee. Both entities posted on 28-May.'},
+  {id:'IC-06',a:'INV-02',b:'COR-01',type:'Dividend remittance',va:12300000,vb:11650000,diff:650000,status:'unmatched-timing',gapType:'timing',resolved:null,resolvedRef:null,resolvedAt:null,note:'INV-02 posted the full AED 12.3M dividend on 28-May. COR-01 has recognised AED 11.65M — the AED 650K gap represents the bank credit COR-01 will book in June. Standard period-end timing difference, expected to self-clear 1-Jun-26.',history:[{period:'Mar-26',diff:620000,outcome:'open',note:'First occurrence — INV-02 March dividend'},{period:'Apr-26',diff:650000,outcome:'open',note:'Persisted — COR-01 April books delayed'},{period:'May-26',diff:650000,outcome:'open',note:'INV-02 posted 28-May; COR-01 books June'}],resA:{label:'Option A — COR-01 accrual (auto-reversal 01-Jun-26)',entity:'COR-01',dr:'GL 1120  IC Dividend Receivable — INV-02',cr:'GL 2200  Accrued IC Income',amt:650000,reverse:true,reverseDate:'01-Jun-26',ref:'ACR-IC06-MAY26'},resB:{label:'Option B — Push to COR-01 posting queue',entity:'COR-01',note:'System creates a draft journal in COR-01\'s Fusion queue. No entry posted until controller approves. 7-day SLA.',ref:'QUEUE-IC06-MAY26'}},
+  {id:'IC-07',a:'RE-02',b:'MGT-01',type:'IT infrastructure cost share',va:1800000,vb:1800000,diff:0,status:'matched',note:'Annual IT cost allocation charged monthly. Matched on 30-May with no exceptions.'},
+  {id:'IC-08',a:'INV-01',b:'RE-01',type:'Equity income distribution',va:4600000,vb:4600000,diff:0,status:'matched',note:'Q1-2026 equity income remittance per equity participation agreement. Matched exactly on 27-May.'},
+  {id:'IC-09',a:'RE-02',b:'RE-01',type:'Lagoons cost share — Phase 2',va:3400000,vb:2950000,diff:450000,status:'unmatched-timing',gapType:'timing',resolved:null,resolvedRef:null,resolvedAt:null,note:'RE-02 has accrued the full AED 3.4M Phase 2 cost share for May. RE-01 has recognised only AED 2.95M — the AED 450K gap is the portion of the invoice not yet received by RE-01 at month-end. Expected to clear on invoice receipt in June.',history:[{period:'Mar-26',diff:380000,outcome:'open',note:'RE-02 first raised Lagoons Phase 2 cost share'},{period:'Apr-26',diff:430000,outcome:'open',note:'Additional cost items added — gap widened'},{period:'May-26',diff:450000,outcome:'open',note:'RE-01 invoice still not received'}],resA:{label:'Option A — RE-01 accrual (auto-reversal 01-Jun-26)',entity:'RE-01',dr:'GL 5210  IC Cost Share — Lagoons',cr:'GL 2150  Accrued IC Payables — RE-02',amt:450000,reverse:true,reverseDate:'01-Jun-26',ref:'ACR-IC09-MAY26'},resB:{label:'Option B — Escalate to RE-01 entity controller',entity:'RE-01',note:'Route to RE-01 controller to post invoice on receipt. CLASSIFY agent adds to controller task queue with 7-day SLA.',ref:'ESC-IC09-MAY26'}},
+  {id:'IC-10',a:'COR-01',b:'HOS-01',type:'Group services fee',va:900000,vb:900000,diff:0,status:'matched',note:'Monthly group services fee for finance, legal and HR shared services. Both entities posted on 29-May.'}
+];
+var BRS_ITEMS=[
+  {id:'BRS-01',bank:'Emirates NBD',account:'AED Operating',gl:248600000,stmt:248750000,diff:-150000,status:'reconciling',note:'Cheque issued 28-May not yet cleared — expected 3-Jun-26. Standard timing. No action required until 3-Jun.'},
+  {id:'BRS-02',bank:'ADCB',account:'AED Collections',gl:185400000,stmt:185400000,diff:0,status:'matched',note:'Fully reconciled. All receipts posted and matched to bank statement.'},
+  {id:'BRS-03',bank:'FAB',account:'USD Trade',gl:67320000,stmt:67180000,diff:140000,status:'reconciling',note:'Bank charges AED 140K not yet journalised. Finance team is posting the journal today — item will clear this evening.'},
+  {id:'BRS-04',bank:'Mashreq',account:'AED Payroll',gl:52100000,stmt:52100000,diff:0,status:'matched',note:'WPS payroll run fully cleared. No outstanding items.'},
+  {id:'BRS-05',bank:'Emirates NBD',account:'Escrow — Lagoons',gl:1820000000,stmt:1820000000,diff:0,status:'matched',note:'Escrow account fully reconciled per RERA requirement. Zero compliance exceptions.'},
+  {id:'BRS-06',bank:'ADCB',account:'USD Financing',gl:980500000,stmt:980630000,diff:-130000,status:'reconciling',note:'Interest accrual of AED 130K posted in GL but not yet reflected in bank statement. Will appear on June statement.'}
+];
+var OPEN_ITEMS=[
+  {id:'OI-01',type:'IC · FX Gap',entity:'RE-01',desc:'IC-04 — FX revaluation difference (rate mismatch)',amount:1500000,action:'Post FX adjustment on RE-01',risk:'medium'},
+  {id:'OI-02',type:'IC · Timing',entity:'COR-01',desc:'IC-06 — Dividend timing gap (INV-02 → COR-01)',amount:650000,action:'Accrue on COR-01 or push to queue',risk:'low'},
+  {id:'OI-03',type:'IC · Timing',entity:'RE-01',desc:'IC-09 — Lagoons Phase 2 cost share gap',amount:450000,action:'Accrue on RE-01 or escalate controller',risk:'low'},
+  {id:'OI-04',type:'BRS',entity:'Emirates NBD',desc:'BRS-01 — Unpresented cheque AED Operating',amount:150000,action:'Await clearance 3-Jun-26',risk:'low'},
+  {id:'OI-05',type:'BRS',entity:'FAB',desc:'BRS-03 — Bank charges not yet journalised',amount:140000,action:'Post journal today',risk:'low'},
+  {id:'OI-06',type:'BRS',entity:'ADCB',desc:'BRS-06 — Interest accrual not on bank statement',amount:130000,action:'Await June bank statement',risk:'low'}
+];
+
+var AGENT_NAMES=['INGEST','MAP','MATCH','CLASSIFY','COMMENTARY','REPORT'];
+var AGENT_FULL={INGEST:'Data Ingestion',MAP:'GL Mapping',MATCH:'IC Matching',CLASSIFY:'Classification',COMMENTARY:'AI Commentary',REPORT:'Report Generation'};
+/* hub (105,100), r=62, 6 nodes at 60° from top */
+var MESH_POS={INGEST:[105,38],MAP:[158,69],MATCH:[158,131],CLASSIFY:[105,162],COMMENTARY:[52,131],REPORT:[52,69]};
+var LABEL_POS={INGEST:[105,20,'middle'],MAP:[176,63,'start'],MATCH:[176,137,'start'],CLASSIFY:[105,180,'middle'],COMMENTARY:[34,137,'end'],REPORT:[34,63,'end']};
+
+var feedCount=0;
+var AUDIT_LOG=[];
+var __drwState={pairId:null,selectedOpt:null};
+
+/* ── HELPERS ── */
+function el(id){return document.getElementById(id);}
+function fmt(n){return 'AED '+(n>=1e6?(n/1e6).toFixed(1)+'M':n.toLocaleString());}
+function showToast(msg){var t=el('toast');el('toastMsg').textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+function openDrawer(html){el('drawer').innerHTML=html;el('drawer').classList.add('show');el('scrim').classList.add('show');}
+function closeDrawer(){el('drawer').classList.remove('show');el('scrim').classList.remove('show');}
+
+function emit(agent,msg,type){
+  feedCount++;
+  var dot=type==='ok'?'ok':type==='risk'?'risk':type==='warn'?'warn':'orange';
+  var ts=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  var d=document.createElement('div');d.className='feed-item';
+  d.innerHTML='<div class="fdot '+dot+'"></div><div><div class="ag">'+agent+'</div><div class="msg">'+msg+'</div><div class="ts">'+ts+'</div></div>';
+  var f=el('feed');f.insertBefore(d,f.firstChild);
+  if(f.children.length>30)f.removeChild(f.lastChild);
+  el('feedCount').textContent=feedCount+' events';
+}
+
+function setActive(ids){
+  AGENT_NAMES.forEach(function(a){
+    var n=el('mn-'+a),e=el('me-'+a),l=el('ml-'+a);
+    var on=ids.indexOf(a)>=0;
+    if(n)n.classList.toggle('active',on);
+    if(e)e.classList.toggle('active',on);
+    if(l){l.classList.remove('live');if(on)l.classList.add('live');}
+  });
+}
+
+/* ── MESH ── */
+function renderMesh(){
+  var hub=[105,100];
+  var edges=AGENT_NAMES.map(function(a){var p=MESH_POS[a];return '<line class="medge" id="me-'+a+'" x1="'+hub[0]+'" y1="'+hub[1]+'" x2="'+p[0]+'" y2="'+p[1]+'"/>';}).join('');
+  var nodes=AGENT_NAMES.map(function(a){
+    var p=MESH_POS[a],lp=LABEL_POS[a];
+    return '<g class="mnode" id="mn-'+a+'"><circle cx="'+p[0]+'" cy="'+p[1]+'" r="13"/><text x="'+p[0]+'" y="'+p[1]+'">'+a.substring(0,3)+'</text></g>'
+      +'<text class="mlabel" id="ml-'+a+'" x="'+lp[0]+'" y="'+lp[1]+'" text-anchor="'+lp[2]+'">'+AGENT_FULL[a]+'</text>';
+  }).join('');
+  el('meshWrap').innerHTML='<svg class="mesh-svg" viewBox="0 0 210 200" xmlns="http://www.w3.org/2000/svg">'
+    +'<defs><radialGradient id="riq-hub" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="var(--orange)" stop-opacity=".18"/><stop offset="100%" stop-color="var(--orange)" stop-opacity="0"/></radialGradient></defs>'
+    +'<circle cx="'+hub[0]+'" cy="'+hub[1]+'" r="63" fill="none" stroke="var(--line-2)" stroke-width=".7" stroke-dasharray="3 5" opacity=".5"/>'
+    +'<circle cx="'+hub[0]+'" cy="'+hub[1]+'" r="32" fill="url(#riq-hub)"/>'
+    +edges+nodes
+    +'<g class="mhub"><circle cx="'+hub[0]+'" cy="'+hub[1]+'" r="20"/><text x="'+hub[0]+'" y="'+hub[1]+'">ReconIQ</text></g>'
+    +'</svg>';
+}
+
+/* ── VIEWS ── */
+var VIEWS={
+  overview:['IC Reconciliation — May 2026','7 of 10 pairs matched · AED 2.6M open · 2 timing diffs + 1 FX gap'],
+  ic:['Intercompany Pair Detail','10 pairs · May-26 · click any row for full analysis · open items below'],
+  brs:['Bank Reconciliation Statement','6 accounts · 94% auto-match · open items below'],
+  agents:['ReconIQ Agent Pipeline','6 agents · INGEST → MAP → MATCH → CLASSIFY → COMMENTARY → REPORT']
+};
+var VIEW_SEQ={
+  overview:[['INGEST','Loading GL extracts — 400+ entities across Oracle Fusion','orange'],['MAP','Applying IC relationship map — 2,420 combinations','orange'],['MATCH','Two-sided matching engine running — comparing entity pairs','orange'],['CLASSIFY','Classifying exceptions: 1×FX gap, 2×timing diffs','warn'],['COMMENTARY','Generating analysis and resolution recommendations','orange'],['REPORT','May-26 reconciliation pack ready — 7/10 matched','ok']],
+  ic:[['MATCH','Refreshing IC pair status for May-26','orange'],['CLASSIFY','Categorising 3 unmatched items by exception type','warn'],['COMMENTARY','Analysis available for IC-04, IC-06, IC-09','ok']],
+  brs:[['INGEST','Pulling bank statements — Emirates NBD, ADCB, FAB, Mashreq','orange'],['MAP','Mapping transactions to GL accounts','orange'],['MATCH','BRS: 94% auto-match rate — 3 reconciling items flagged','ok']],
+  agents:[['INGEST','Standing by — next run 06:00, 15-Jun-26','ok'],['MATCH','Last run confidence: 97.3% on matched pairs','ok']]
+};
+
+function go(view){
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  var nb=el('nb-'+view);if(nb)nb.classList.add('active');
+  var t=VIEWS[view];if(t){el('barT').textContent=t[0];el('barS').textContent=t[1];}
+  el('content').innerHTML='<div class="sk-kpis"><div class="sk sk-kpi"></div><div class="sk sk-kpi"></div><div class="sk sk-kpi"></div><div class="sk sk-kpi"></div><div class="sk sk-kpi"></div></div><div class="sk sk-block"></div>';
+  var seq=VIEW_SEQ[view]||[];
+  seq.forEach(function(s,i){setTimeout(function(){emit(s[0],s[1],s[2]);setActive([s[0]]);},i*220);});
+  setTimeout(function(){
+    setActive([]);
+    if(view==='overview')renderOverview();
+    else if(view==='ic')renderIC();
+    else if(view==='brs')renderBRS();
+    else if(view==='agents')renderAgents();
+  },Math.max(seq.length*220+200,420));
+}
+
+function kpi(lbl,val,sub,tone){
+  return '<div class="kpi"><div class="lbl">'+lbl+'</div><div class="val">'+val+'</div><div class="sub '+tone+'">'+sub+'</div></div>';
+}
+function pill(label,cls){return '<span class="pill '+cls+'">'+label+'</span>';}
+function statusPill(p){
+  if(p.resolved)return pill('✓ Posted','ok');
+  if(p.status==='matched')return pill('✓ Matched','ok');
+  if(p.status==='unmatched-fx')return pill('FX Gap','warn');
+  if(p.status==='unmatched-timing')return pill('Timing','orange');
+  return pill('Open','risk');
+}
+function drwRow(k,v){return '<div class="drw-row"><span class="drw-k">'+k+'</span><span class="drw-v">'+v+'</span></div>';}
+
+/* ── Overview ── */
+function renderOverview(){
+  var h='<div class="kpi-row">'
+    +kpi('Pairs Matched','7 / 10','70% · May-26 run complete','ok')
+    +kpi('IC Open','AED 2.6M','3 items: 1 FX + 2 timing','risk')
+    +kpi('BRS Auto-match','94%','3 reconciling items','warn')
+    +kpi('Open Items Queue','6','3 IC · 3 BRS — see below','warn')
+    +kpi('Run Time','4m 12s','vs 2–3 days manual','ok')
+    +'</div>';
+  h+='<div class="acard"><div class="acard-head"><div class="acard-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Sage Commentary — May-26 Reconciliation</h3></div>'
+    +'<p>The May-26 intercompany run is complete. <strong>7 of 10 pairs matched cleanly</strong> with zero intervention required. The AED 2.6M open balance across the remaining three pairs breaks into three distinct categories:<br><br>'
+    +'<strong>IC-04 (AED 1.5M) — FX revaluation gap:</strong> RE-01 and INV-01 applied different exchange rates to the same USD receivable (closing vs. average rate). A single FX adjustment entry on RE-01 closes it. No auto-reversal required.<br><br>'
+    +'<strong>IC-06 (AED 650K) — Dividend timing:</strong> INV-02 posted on 28-May; COR-01 books on bank-credit receipt in June. Standard timing difference — expected to self-clear 1-Jun-26.<br><br>'
+    +'<strong>IC-09 (AED 450K) — Lagoons Phase 2 cost share:</strong> RE-02 accrued the full charge; RE-01 is awaiting invoice receipt. Expected to clear on invoice arrival in June.<br><br>'
+    +'No systemic issues. All matched pairs balanced to the cent. The three open items are within normal month-end tolerance for a portfolio of this size.</p></div>';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><h2 style="font-size:13px;font-weight:600">IC Pair Summary</h2><span style="font-size:11px;color:var(--ink-3)">7 matched · 3 open — click any row for detail</span></div>';
+  h+='<div class="tbl-wrap"><table><thead><tr><th>Pair</th><th>Entities</th><th>Transaction</th><th class="num">Diff (AED)</th><th>Status</th></tr></thead><tbody>';
+  IC_PAIRS.forEach(function(p){
+    h+='<tr class="clickable" onclick="openICDrawer(\''+p.id+'\')"><td class="mono">'+p.id+'</td><td style="font-size:11.5px;color:var(--ink-3);font-family:var(--mono)">'+p.a+' ↔ '+p.b+'</td><td>'+p.type+'</td>'
+      +'<td class="num">'+(p.diff?'<span style="color:var(--risk);font-weight:600">'+p.diff.toLocaleString()+'</span>':'<span style="color:var(--ok)">—</span>')+'</td>'
+      +'<td>'+statusPill(p)+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  el('content').innerHTML=h;
+}
+
+/* ── Open Items inline section ── */
+function openItemsSection(typePrefix){
+  var items=OPEN_ITEMS.filter(function(o){return o.type.indexOf(typePrefix)===0;});
+  if(!items.length)return '';
+  var totalAmt=items.reduce(function(s,o){return s+o.amount;},0);
+  var h='<div id="open-items-section" style="margin-top:22px">';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
+  h+='<h2 style="font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px">'
+    +'<span style="width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block;flex-shrink:0"></span>'
+    +'Open Items</h2>';
+  h+='<span style="font-size:11px;color:var(--ink-3)">'+items.length+' item'+(items.length>1?'s':'')+' · AED '+totalAmt.toLocaleString()+' · pre-close action required</span>';
+  h+='</div>';
+  h+='<div class="tbl-wrap"><table>'
+    +'<thead><tr><th>ID</th><th>Entity</th><th>Description</th><th class="num">Amount (AED)</th><th>Action Required</th><th>Risk</th></tr></thead><tbody>';
+  items.forEach(function(o){
+    var rc=o.risk==='low'?'ok':o.risk==='medium'?'warn':'risk';
+    h+='<tr><td class="mono">'+o.id+'</td>'
+      +'<td class="mono" style="font-size:11.5px">'+o.entity+'</td>'
+      +'<td style="font-size:12px">'+o.desc+'</td>'
+      +'<td class="num">'+o.amount.toLocaleString()+'</td>'
+      +'<td style="font-size:12px;color:var(--ink-2)">'+o.action+'</td>'
+      +'<td>'+pill(o.risk.charAt(0).toUpperCase()+o.risk.slice(1),rc)+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='</div>';
+  return h;
+}
+
+/* ── IC Pairs ── */
+function renderIC(){
+  var h='<div class="kpi-row">'
+    +kpi('Total Pairs','10','May-26 · 400+ entity universe','ok')
+    +kpi('Matched','7','Two-sided elimination confirmed','ok')
+    +kpi('FX Gaps','1','IC-04 · rate-selection difference','warn')
+    +kpi('Timing Diffs','2','IC-06, IC-09 · self-clear Jun','warn')
+    +kpi('Open (AED)','2.6M','IC-04 + IC-06 + IC-09','risk')
+    +'</div>';
+  h+='<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Entity A</th><th>Entity B</th><th>Transaction Type</th><th class="num">Entity A (AED)</th><th class="num">Entity B (AED)</th><th class="num">Diff (AED)</th><th>Type</th><th>Status</th></tr></thead><tbody>';
+  IC_PAIRS.forEach(function(p){
+    h+='<tr class="clickable" onclick="openICDrawer(\''+p.id+'\')"><td class="mono">'+p.id+'</td>'
+      +'<td>'+pill(p.a,'ink')+'</td><td>'+pill(p.b,'ink')+'</td>'
+      +'<td>'+p.type+'</td>'
+      +'<td class="num">'+p.va.toLocaleString()+'</td>'
+      +'<td class="num">'+p.vb.toLocaleString()+'</td>'
+      +'<td class="num">'+(p.diff?'<span style="color:var(--risk);font-weight:600">'+p.diff.toLocaleString()+'</span>':'<span style="color:var(--ok)">0</span>')+'</td>'
+      +'<td>'+(p.gapType?pill(p.gapType.toUpperCase(),p.gapType==='fx'?'warn':'orange'):pill('—','ok'))+'</td>'
+      +'<td>'+statusPill(p)+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+=openItemsSection('IC');
+  el('content').innerHTML=h;
+}
+
+function openICDrawer(id){
+  var p=null;IC_PAIRS.forEach(function(x){if(x.id===id)p=x;});if(!p)return;
+  var unmatched=p.status!=='matched';
+
+  // Prime drawer state
+  __drwState.pairId=id;
+  __drwState.selectedOpt=null;
+
+  var h='<div class="drw-head"><div><div class="drw-title">'+p.id+' — '+p.type+'</div>'
+    +'<div class="drw-sub">'+ENTITIES[p.a]+' ↔ '+ENTITIES[p.b]+'</div></div>'
+    +'<div class="drw-x" onclick="closeDrawer()">×</div></div>';
+  h+='<div class="drw-body">';
+  h+='<div class="drw-sect"><h3>Pair Detail</h3>';
+  h+=drwRow('Period','May-26');
+  h+=drwRow('Entity A',p.a+' · '+ENTITIES[p.a]);
+  h+=drwRow('Entity B',p.b+' · '+ENTITIES[p.b]);
+  h+=drwRow('Transaction',p.type);
+  h+=drwRow('Entity A amount','AED '+p.va.toLocaleString());
+  h+=drwRow('Entity B amount','AED '+p.vb.toLocaleString());
+  h+=drwRow('Difference',p.diff?'AED '+p.diff.toLocaleString()+' ⚠':'Zero — fully matched');
+  h+=drwRow('Status',p.resolved?'✓ Resolution posted ('+p.resolvedRef+')'
+    :unmatched?(p.gapType==='fx'?'FX Revaluation Gap':'Timing Difference — period-end'):'Matched ✓');
+  h+='</div>';
+  h+='<div class="drw-sect"><h3>Sage Analysis</h3><p style="font-size:12.5px;color:var(--ink-2);line-height:1.65">'+p.note+'</p></div>';
+
+  if(p.gapType==='timing') h+=renderHistory(p);
+
+  if(unmatched){
+    h+='<div class="drw-sect" id="resSect"><h3>Resolution Actions</h3>';
+    if(p.resolved){
+      // Already posted — show confirmation
+      h+=resolvedConfirmHTML(p);
+    } else if(p.gapType==='fx'){
+      // Single option — FX adjustment, auto-selected
+      __drwState.selectedOpt='A';
+      h+='<div class="res-box warn" id="opt-A">'
+        +'<div class="rtitle">'+p.resA.label+'</div>'
+        +'<div class="rbody">'
+        +'DR  '+p.resA.dr+'<br>'
+        +'      CR  '+p.resA.cr+'<br>'
+        +'Amounts: AED '+p.resA.amt.toLocaleString()+' / AED '+p.resA.amt.toLocaleString()
+        +'<div class="rnote">No auto-reversal — permanent rate correction · Ref: '+p.resA.ref+'</div>'
+        +'</div></div>';
+      h+='<button class="btn-approve" id="approveBtn" onclick="approveResolution()">Approve &amp; Post FX Adjustment →</button>';
+    } else {
+      // Two options — timing diffs
+      h+='<p class="res-sel-hint">Select a resolution path, then click Approve &amp; Post.</p>';
+      h+='<div class="res-box orange selectable" id="opt-A" data-opt="A" onclick="selectOpt(\'A\')">'
+        +'<div class="rtitle">'+p.resA.label+'</div>'
+        +'<div class="rbody">'
+        +'Entity: '+p.resA.entity+'<br>'
+        +'DR  '+p.resA.dr+'<br>'
+        +'      CR  '+p.resA.cr+'<br>'
+        +'Amounts: AED '+p.resA.amt.toLocaleString()+' / AED '+p.resA.amt.toLocaleString()
+        +'<div class="rnote">Auto-reversal '+p.resA.reverseDate+' · Ref: '+p.resA.ref+'</div>'
+        +'</div></div>';
+      h+='<div class="res-box ink selectable" id="opt-B" data-opt="B" onclick="selectOpt(\'B\')">'
+        +'<div class="rtitle">'+p.resB.label+'</div>'
+        +'<div class="rbody">'+p.resB.note
+        +'<div class="rnote">Ref: '+p.resB.ref+'</div>'
+        +'</div></div>';
+      h+='<button class="btn-approve" id="approveBtn" onclick="approveResolution()" disabled>Select an option above to continue</button>';
+    }
+    h+='</div>';
+  }
+  h+='</div>';
+  openDrawer(h);
+}
+
+function selectOpt(optId){
+  __drwState.selectedOpt=optId;
+  document.querySelectorAll('.res-box.selectable').forEach(function(box){
+    box.classList.toggle('selected', box.getAttribute('data-opt')===optId);
+  });
+  var btn=el('approveBtn');
+  if(btn){
+    btn.disabled=false;
+    btn.textContent=optId==='A'?'Approve & Post →':'Queue for Controller →';
+  }
+}
+
+function approveResolution(){
+  var id=__drwState.pairId, opt=__drwState.selectedOpt;
+  if(!id||!opt)return;
+  var p=null;IC_PAIRS.forEach(function(x){if(x.id===id)p=x;});if(!p)return;
+  var resObj=opt==='A'?p.resA:p.resB;
+  var ts=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  // Update data model
+  p.resolved=opt;p.resolvedRef=resObj.ref;p.resolvedAt=ts;
+
+  // Push to audit chain
+  AUDIT_LOG.push({pairId:id,opt:opt,ref:resObj.ref,ts:ts,entity:resObj.entity||p.a});
+
+  // Emit feed events
+  emit('MATCH','Resolution approved: '+id+' · '+resObj.ref,'ok');
+  if(opt==='A'&&p.resA.reverse){
+    setTimeout(function(){emit('CLASSIFY','Auto-reversal scheduled: '+p.resA.reverseDate+' · '+resObj.ref,'ok');},350);
+  }
+  if(opt==='B'){
+    setTimeout(function(){emit('CLASSIFY','Draft journal queued in '+resObj.entity+' Fusion — 7-day SLA · '+resObj.ref,'warn');},350);
+  }
+
+  // Replace resolution section with confirmation
+  var sect=el('resSect');
+  if(sect){
+    sect.innerHTML='<h3>Resolution Actions</h3>'+resolvedConfirmHTML(p);
+  }
+  // Update pair detail row
+  var statusRow=document.querySelector('.drw-row .drw-v:last-child');
+  showToast(p.id+' resolution posted — '+resObj.ref);
+}
+
+function renderHistory(p){
+  var hist=p.history;
+  if(!hist||!hist.length)return '';
+  var last=hist[hist.length-1];
+  var prev=hist.length>=2?hist[hist.length-2]:null;
+
+  // Trend: compare last two periods
+  var trendCls,trendLabel;
+  if(!prev){trendCls='warn';trendLabel='→ Stable';}
+  else if(last.diff>prev.diff){trendCls='risk';trendLabel='↑ Growing';}
+  else if(last.diff<prev.diff){trendCls='ok';trendLabel='↓ Clearing';}
+  else{trendCls='warn';trendLabel='→ Stable';}
+
+  // Escalation: 2+ consecutive open periods with non-decreasing diff
+  var consOpen=0;
+  for(var i=hist.length-1;i>=0;i--){if(hist[i].outcome==='open')consOpen++;else break;}
+  var nonDecreasing=prev&&last.diff>=prev.diff;
+  var escalate=consOpen>=2&&nonDecreasing&&last.diff>0;
+  var watchOnly=consOpen>=2&&!nonDecreasing;
+
+  var h='<div class="drw-sect"><h3 style="display:flex;align-items:center;gap:8px">Period History'
+    +'<span class="trend-chip '+trendCls+'">'+trendLabel+'</span></h3>';
+  h+='<div class="tbl-wrap" style="margin-bottom:0">'
+    +'<table class="hist-tbl"><thead><tr><th>Period</th><th class="num">Diff (AED)</th><th>Outcome</th><th>Note</th></tr></thead><tbody>';
+
+  hist.forEach(function(e,i){
+    var dotCls=e.outcome==='cleared'?'ok':e.outcome==='partial'?'warn':'risk';
+    var outcomeLabel=e.outcome==='cleared'?'Cleared':e.outcome==='partial'?'Partial':'Open';
+    var isCurrent=i===hist.length-1;
+    h+='<tr>'
+      +'<td style="font-family:var(--mono);font-size:11.5px">'+(isCurrent?'<strong>'+e.period+'</strong>':e.period)+'</td>'
+      +'<td class="num">'+e.diff.toLocaleString()+'</td>'
+      +'<td style="white-space:nowrap"><span class="hist-dot '+dotCls+'"></span>'+outcomeLabel+'</td>'
+      +'<td style="font-size:11px;color:var(--ink-3)">'+e.note+'</td>'
+      +'</tr>';
+  });
+
+  h+='</tbody></table></div>';
+
+  if(escalate&&!p.resolved){
+    h+='<div class="esc-banner">'
+      +'<div class="eb-t">'
+      +'<svg style="width:14px;height:14px;stroke:var(--risk);fill:none;stroke-width:2.5;stroke-linecap:round;flex-shrink:0" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+      +'CLASSIFY — Escalation triggered'
+      +'</div>'
+      +'<div class="eb-b">'+consOpen+' consecutive open periods, gap widening (AED '
+      +(prev?prev.diff.toLocaleString():'—')+' → AED '+last.diff.toLocaleString()+'). '
+      +p.id+' has been added to the '+hist[0].period.replace('-','–')+' aged-items register. '
+      +'Resolve this period before the Jun-26 close or the item ages to a fourth period and enters a formal escalation workflow.</div>'
+      +'</div>';
+  } else if(watchOnly&&!p.resolved){
+    h+='<div class="watch-note"><strong>Watch:</strong> '+consOpen+' consecutive open periods, gap is clearing. '
+      +'Expected to self-clear in Jun-26. CLASSIFY will re-assess at next IC run.</div>';
+  } else if(consOpen>=2&&!nonDecreasing&&!p.resolved){
+    h+='<div class="watch-note"><strong>Watch:</strong> '+consOpen+' consecutive open periods. '
+      +'Stable — no escalation trigger yet. Monitor at Jun-26 IC run.</div>';
+  }
+
+  h+='</div>';
+  return h;
+}
+
+function resolvedConfirmHTML(p){
+  var res=p.resolved==='A'?p.resA:p.resB;
+  var hasJournal=p.resolved==='A'&&p.resA.dr;
+  return '<div class="res-confirm">'
+    +'<div class="rct"><svg style="width:15px;height:15px;stroke:var(--ok);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>'+res.label+' — posted at '+p.resolvedAt+'</div>'
+    +'<div class="rcb">'+(hasJournal
+      ? 'DR  '+p.resA.dr+'<br>      CR  '+p.resA.cr+'<br>Amounts: AED '+p.resA.amt.toLocaleString()+' / AED '+p.resA.amt.toLocaleString()
+        +(p.resA.reverse?'<br>Auto-reversal: '+p.resA.reverseDate:'')
+      : (res.note||'Draft journal pushed to controller queue'))
+    +'</div>'
+    +'<div class="rch">Ref: '+p.resolvedRef+' · Audit chain entry '+AUDIT_LOG.length+' · '+p.resolvedAt+'</div>'
+    +'</div>';
+}
+
+/* ── BRS ── */
+function renderBRS(){
+  var reconciling=BRS_ITEMS.filter(function(b){return b.status!=='matched';});
+  var openAmt=reconciling.reduce(function(s,b){return s+Math.abs(b.diff);},0);
+  var h='<div class="kpi-row">'
+    +kpi('Accounts','6','Emirates NBD, ADCB, FAB, Mashreq','ok')
+    +kpi('Fully Matched','3','Zero variance, AED + USD','ok')
+    +kpi('Reconciling','3','Standard period-end items','warn')
+    +kpi('Reconciling Amt','AED '+openAmt.toLocaleString(),'Cheques + charges + accruals','warn')
+    +kpi('Auto-match Rate','94%','Above 90% SLA target','ok')
+    +'</div>';
+  h+='<div class="acard"><div class="acard-head"><div class="acard-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><h3>Sage Commentary — Bank Reconciliation May-26</h3></div>'
+    +'<p>All 6 bank accounts reconciled for May-26. Three accounts carry reconciling items totalling AED 420K — all standard period-end timing with clear resolution actions and no unexplained variances.<br><br>'
+    +'BRS-01 (Emirates NBD): unpresented cheque AED 150K clearing 3-Jun. BRS-03 (FAB): bank charges AED 140K being journalised today. BRS-06 (ADCB): interest accrual AED 130K reflects on June statement. None pose a risk to close sign-off.</p></div>';
+  h+='<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Bank</th><th>Account</th><th class="num">GL Balance</th><th class="num">Bank Statement</th><th class="num">Diff</th><th>Status</th></tr></thead><tbody>';
+  BRS_ITEMS.forEach(function(b){
+    h+='<tr class="clickable" onclick="openBRSDrawer(\''+b.id+'\')"><td class="mono">'+b.id+'</td><td>'+b.bank+'</td><td>'+b.account+'</td>'
+      +'<td class="num">'+b.gl.toLocaleString()+'</td><td class="num">'+b.stmt.toLocaleString()+'</td>'
+      +'<td class="num">'+(b.diff?'<span style="color:var(--warn)">'+b.diff.toLocaleString()+'</span>':'<span style="color:var(--ok)">—</span>')+'</td>'
+      +'<td>'+(b.status==='matched'?pill('✓ Matched','ok'):pill('Reconciling','warn'))+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+=openItemsSection('BRS');
+  el('content').innerHTML=h;
+}
+
+function openBRSDrawer(id){
+  var b=null;BRS_ITEMS.forEach(function(x){if(x.id===id)b=x;});if(!b)return;
+  var h='<div class="drw-head"><div><div class="drw-title">'+b.id+' — '+b.bank+'</div><div class="drw-sub">'+b.account+' · May-26</div></div><div class="drw-x" onclick="closeDrawer()">×</div></div>';
+  h+='<div class="drw-body"><div class="drw-sect"><h3>Account Detail</h3>';
+  h+=drwRow('Bank',b.bank);h+=drwRow('Account',b.account);
+  h+=drwRow('GL Balance','AED '+b.gl.toLocaleString());
+  h+=drwRow('Bank Statement','AED '+b.stmt.toLocaleString());
+  h+=drwRow('Difference',b.diff?'AED '+b.diff.toLocaleString():'—');
+  h+=drwRow('Status',b.status==='matched'?'Matched ✓':'Reconciling item');
+  h+='</div><div class="drw-sect"><h3>Sage Analysis</h3><p style="font-size:12.5px;color:var(--ink-2);line-height:1.65">'+b.note+'</p></div>';
+  if(b.status!=='matched'){
+    h+='<button class="btn-approve" onclick="showToast(\'BRS item acknowledged — '+b.id+'\');closeDrawer()">Acknowledge →</button>';
+  }
+  h+='</div>';
+  openDrawer(h);
+}
+
+
+/* ── Agents ── */
+function renderAgents(){
+  var desc={
+    INGEST:'Pulls GL trial balances from Oracle Fusion across 400+ entities via secure API. Validates that all expected feeds are received before the run proceeds.',
+    MAP:'Applies the IC relationship map — 2,420 active entity-pair combinations across 7 transaction types. Aligns GL account codes to the canonical IC matrix.',
+    MATCH:'Runs the two-sided matching engine: compares Entity A\'s posted amount against Entity B\'s. Flags pairs where |A − B| exceeds the tolerance threshold.',
+    CLASSIFY:'Categorises each exception: FX revaluation gap (rate difference), timing difference (period-end lag), or error (investigation required). Assigns resolution priority.',
+    COMMENTARY:'Generates plain-language analysis for each exception using entity context, history, and resolution playbook. Populates the open-items queue with action recommendations.',
+    REPORT:'Assembles the consolidated reconciliation pack: matched pairs, open items with resolution actions, BRS summary, and audit hash chain for controller sign-off.'
+  };
+  var h='<div class="kpi-row">'
+    +kpi('Agents Active','6','Full INGEST→REPORT pipeline','ok')
+    +kpi('Pairs Processed','10','May-26 run complete','ok')
+    +kpi('Auto-match Rate','70%','7 of 10 IC pairs — 3 open','warn')
+    +kpi('Processing Time','4m 12s','vs 2–3 days manual','ok')
+    +kpi('Next Run','06:00','15-Jun-26','ok')
+    +'</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+  AGENT_NAMES.forEach(function(a){
+    h+='<div class="acard"><div class="acard-head"><div class="acard-icon" style="background:var(--panel-3)"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--ink-2);fill:none;stroke-width:2;stroke-linecap:round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4"/></svg></div><h3>'+a+' — '+AGENT_FULL[a]+'</h3></div>'
+      +'<p style="font-size:12px;color:var(--ink-2);line-height:1.6">'+desc[a]+'</p>'
+      +'<div style="margin-top:10px;display:flex;gap:6px">'+pill('Active','ok')+pill('May-26 complete','ink')+'</div></div>';
+  });
+  h+='</div>';
+  el('content').innerHTML=h;
+}
+
+/* ── SAGE ── */
+var sageOpen=false;
+function toggleRail(){el('app').classList.toggle('rail-collapsed');}
+function toggleSage(){sageOpen=!sageOpen;el('sagePanel').classList.toggle('open',sageOpen);}
+function sendSage(){
+  var inp=el('sageIn'),q=inp.value.trim();if(!q)return;inp.value='';
+  var body=el('sageBody');
+  var um=document.createElement('div');um.className='smsg user';um.textContent=q;body.appendChild(um);
+  setTimeout(function(){
+    var bm=document.createElement('div');bm.className='smsg bot';bm.textContent=sageReply(q);
+    body.appendChild(bm);body.scrollTop=body.scrollHeight;
+  },620);
+  body.scrollTop=body.scrollHeight;
+}
+function sageReply(q){
+  var ql=q.toLowerCase();
+  if(/ic.04|fx|revaluat|rate/i.test(ql))return 'IC-04 is an FX revaluation gap of AED 1.5M. RE-01 used the 31-May closing rate (3.6730); INV-01 used the monthly average (3.6185). Resolution: a single FX adjustment entry on RE-01 — DR GL 1110 IC Receivable / CR GL 4200 FX Gain, AED 1.5M. No auto-reversal required.';
+  if(/ic.06|dividend|inv.02|cor.01/i.test(ql))return 'IC-06 is a AED 650K timing gap. INV-02 posted 28-May; COR-01 books on bank-credit receipt in June. Option A: COR-01 accrual (DR IC Dividend Receivable / CR Accrued IC Income, auto-reversal 01-Jun). Option B: push draft journal to COR-01 posting queue.';
+  if(/ic.09|lagoons|re.01|re.02|cost share/i.test(ql))return 'IC-09 is a AED 450K timing gap on Lagoons Phase 2. RE-02 accrued the full charge; RE-01 awaits invoice receipt. Option A: RE-01 accrual (DR GL 5210 Cost Share / CR GL 2150 Accrued Payables, auto-reversal 01-Jun). Option B: escalate to RE-01 entity controller.';
+  if(/brs|bank/i.test(ql))return 'BRS: 94% auto-match across 6 accounts. Three reconciling items: BRS-01 (unpresented cheque AED 150K — clears 3-Jun), BRS-03 (bank charges AED 140K — journalising today), BRS-06 (interest accrual AED 130K — on June statement). No control exceptions.';
+  if(/total|open|2\.6|amount/i.test(ql))return 'Total open IC balance is AED 2.6M: IC-04 AED 1.5M (FX gap), IC-06 AED 650K (timing), IC-09 AED 450K (timing). BRS has AED 420K of reconciling items — all timing, no risk to close sign-off.';
+  if(/match|rate|how many/i.test(ql))return '7 of 10 IC pairs matched in May-26 — 70% direct match rate. The 3 open items account for AED 2.6M. Full pipeline ran in 4m 12s versus 2–3 days manually.';
+  return 'May-26: 7/10 IC pairs matched, AED 2.6M open across IC-04 (FX gap), IC-06 (timing), IC-09 (timing). BRS: 94% auto-match, AED 420K reconciling items. All items have clear resolution paths. Which pair or entity would you like to analyse?';
+}
+
+/* ── THEME ── */
+function toggleTheme(){
+  document.documentElement.classList.toggle('theme-light');
+  updateThemeIcon();
+  try{localStorage.setItem('reconiq-theme',document.documentElement.classList.contains('theme-light')?'light':'dark');}catch(e){}
+}
+function updateThemeIcon(){
+  var ic=el('themeIcon');if(!ic)return;
+  var light=document.documentElement.classList.contains('theme-light');
+  ic.innerHTML=light?'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>':'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+}
+
+/* ── INIT ── */
+(function(){
+  try{if(localStorage.getItem('reconiq-theme')==='dark')document.documentElement.classList.remove('theme-light');}catch(e){}
+  renderMesh();
+  updateThemeIcon();
+  setTimeout(function(){emit('REPORT','May-26 IC run complete — 7/10 matched, AED 2.6M open','ok');},200);
+  setTimeout(function(){emit('CLASSIFY','3 open items: 1×FX gap (IC-04), 2×timing (IC-06, IC-09)','warn');},420);
+  setTimeout(function(){emit('MATCH','Matched pairs validated — zero tolerance breaches on 7 pairs','ok');},640);
+  setTimeout(function(){emit('INGEST','All entity GL feeds received — 400+ entities processed','ok');},860);
+  go('overview');
+})();
+</script>
+
+<script>
+(function(){
+  if(window.parent===window) return;
+  window.parent.postMessage({__showBar:true},'*');
+})();
+</script>
+</body>
+</html>

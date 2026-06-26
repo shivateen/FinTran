@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  closeiq:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    image: closeiq:latest
+    container_name: closeiq
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# ── To run behind a reverse proxy (e.g. Traefik / Caddy on the same VPS):
+# Change ports: "80:80" → "127.0.0.1:8080:80"
+# Then point your reverse proxy at localhost:8080

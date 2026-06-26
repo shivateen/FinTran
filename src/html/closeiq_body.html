@@ -1,0 +1,143 @@
+<div class="app" id="app">
+
+  <!-- LEFT NAV -->
+  <nav class="nav">
+    <div class="logo">T</div>
+    <button class="nav-btn active" data-view="sources" onclick="go('sources')">
+      <svg viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Sources</button>
+    <button class="nav-btn" data-view="flow" onclick="go('flow')">
+      <svg viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h10M5 8v8M19 8v8M7 18h10"/></svg>Flow</button>
+    <button class="nav-btn" data-view="je" onclick="go('je')">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>JE</button>
+    <button class="nav-btn" data-view="modC" onclick="go('modC')">
+      <svg viewBox="0 0 24 24"><path d="M7 8h10M7 12h10M7 16h6M3 4h18v16H3z"/></svg>Recon</button>
+    <button class="nav-btn" data-view="modB" onclick="go('modB')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Variance</button>
+    <button class="nav-btn" data-view="modA" onclick="go('modA')">
+      <svg viewBox="0 0 24 24"><path d="M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4.3-4.3"/></svg>Scrutiny</button>
+    <button class="nav-btn" data-view="p13" onclick="go('p13')">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>P13</button>
+    <button class="nav-btn" data-view="exec" onclick="go('exec')">
+      <svg viewBox="0 0 24 24"><path d="M3 13h4v8H3zM10 3h4v18h-4zM17 9h4v12h-4z"/></svg>CFO</button>
+    <button class="nav-btn" data-view="fc" onclick="go('fc')">
+      <svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 5-7 4 5M3 21h18"/></svg>Forecast</button>
+    <div class="nav-sp"></div>
+    <div class="ver-chip">v2.4.1</div>
+    <button class="nav-btn" onclick="toggleRail()">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Agents</button>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+    <div class="topbar">
+      <div class="brandmark"><span class="p">Close<b>IQ</b></span><span class="by">by Tiger Analytics</span></div>
+      <div>
+        <div class="tb-title" id="barT">Executive Close Summary</div>
+        <div class="tb-sub" id="barS">Group consolidated · 10 entities · live drill-down enabled</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+        <div class="tb-search"><svg viewBox="0 0 24 24"><path d="M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4.3-4.3"/></svg>
+          <input id="tbSearch" placeholder="Ask anything — entity, GL, vendor…" onkeydown="if(event.key==='Enter'&&this.value.trim()){openSage();const q=this.value.trim();this.value='';setTimeout(()=>askSage(q),350);}"></div>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark">
+          <svg id="themeIcon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="tb-bell" onclick="openAudit()" title="Activity & audit"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg><span class="b" id="bellB">·</span></button>
+        <div class="tb-user"><div class="ava">J</div><div><div class="nm">John</div><div class="rl">Group Controller</div></div></div>
+        <div class="period-pill" id="barFresh"><span class="live-dot"></span>no sources loaded</div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+
+  <!-- AGENT RAIL -->
+  <aside class="rail" id="rail">
+    <div class="rail-head">
+      <div class="t" id="meshTitle"><svg class="gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Capability Mesh</div>
+      <div class="s" id="meshSub">7 standing capabilities · Sage activates the subset each task needs · Temporal-durable</div>
+    </div>
+    <div class="agent-roster" id="roster"></div>
+    <div class="feed" id="feed"></div>
+    <div class="rail-foot"><span id="feedCount">0 events</span><span style="cursor:pointer;text-decoration:underline dotted" onclick="openAudit()" title="Open audit trail">audit chain ✓</span></div>
+  </aside>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="email-modal" id="emailModal">
+  <div class="email-box">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+      <h2>Email this pack</h2>
+    </div>
+    <p class="sub"><b style="color:var(--orange-soft)">Two-step send:</b> ① The PPTX pack downloads to your device. ② Your email client opens with subject and body pre-filled — attach the file and hit Send.</p>
+    <div class="email-field">
+      <label>Recipient email address</label>
+      <input type="email" id="emailTo" placeholder="e.g. cfo@fintran.com" autocomplete="email">
+    </div>
+    <div class="email-field">
+      <label>Email preview <span style="font-weight:400;text-transform:none;letter-spacing:0">(editable)</span></label>
+      <textarea id="emailBody" rows="5" class="email-preview"></textarea>
+    </div>
+    <div class="email-field">
+      <label>Subject</label>
+      <input type="text" id="emailSubject" value="">
+    </div>
+    <div class="email-actions">
+      <button class="send-email" id="sendEmailBtn" onclick="sendEmailNow()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        Send &amp; download
+      </button>
+      <button class="cancel-email" onclick="closeEmailModal()">Cancel</button>
+    </div>
+    <div class="email-status" id="emailStatus"></div>
+  </div>
+</div>
+
+<!-- SAGE PROACTIVE PING -->
+<div class="sage-ping" id="sagePing">
+  <div class="ph"><span class="dot"></span><b>Sage noticed something</b><span style="margin-left:auto;cursor:pointer;color:var(--ink-3)" onclick="dismissPing()">×</span></div>
+  <div class="pt" id="pingText"></div>
+  <div class="pa">
+    <button class="btn pri" style="padding:7px 13px;font-size:11.5px" onclick="pingFollow()">Show me</button>
+    <button class="btn" style="padding:7px 13px;font-size:11.5px" onclick="dismissPing()">Later</button>
+  </div>
+</div>
+
+<!-- SAGE ASSISTANT -->
+<button class="sage-fab" id="sageFab" onclick="openSage()">
+  <span class="av"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><path d="M9 21h6"/></svg></span>
+  Ask Sage <span class="pulse"></span>
+</button>
+
+<div class="sage" id="sage">
+  <div class="sage-head" id="sageHead">
+    <div class="sage-orb" id="sageOrb"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><path d="M9 21h6"/></svg></div>
+    <div class="sage-id"><div class="n">Sage</div><div class="r" id="sageRole">Finance knowledge assistant</div></div>
+    <div class="sage-head-tools">
+      <button class="sage-expand" id="sageExpandBtn" onclick="toggleSageExpand()" title="Expand Sage">
+        <svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+      </button>
+      <div class="sage-x" onclick="closeSage()" title="Close" aria-label="Close">×</div>
+    </div>
+  </div>
+  <div class="sage-controls">
+    <button class="mode-pill" id="aiMode" onclick="connectAI()" title="Reasoning mode">● Sonnet 4.6</button>
+    <select class="voice-sel" id="voiceSel" onchange="setVoice(this.value)" title="Voice"></select>
+    <button class="mode-pill" id="sageMuteBtn" onclick="toggleSageMute()" title="Mute / unmute voice" style="display:flex;align-items:center;gap:4px">
+      <svg id="sageMuteIcon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+    </button>
+    <div class="lang-toggle"><button class="on" id="langEN" onclick="setLang('en')">EN</button><button id="langAR" onclick="setLang('ar')">عربي</button></div>
+  </div>
+  <div class="sage-body" id="sageBody"></div>
+  <div class="sage-suggest" id="sageSuggest"></div>
+  <div class="voice-hint" id="voiceHint"></div>
+  <div class="cmd-palette" id="cmdPalette" style="display:none;"></div>
+  <div class="sage-foot">
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Voice"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3"/></svg></button>
+    <textarea class="sage-input" id="sageInput" rows="1" placeholder="Ask about the close, an entity, a variance…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSage()}"></textarea>
+    <button class="send-btn" onclick="sendSage()"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast" id="toast"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg"></span></div>
